@@ -1,0 +1,9 @@
+[package]
+name = "egui-components-theme"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Theme tokens for egui, ported from longbridge/gpui-component"
+
+[dependencies]
+egui.workspace = true

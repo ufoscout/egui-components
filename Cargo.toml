@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/theme",
+    "crates/components",
+    "examples/demo",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/longbridge/gpui-component"
+description = "Port of longbridge/gpui-component to egui 0.34"
+
+[workspace.dependencies]
+egui = "0.34"
+eframe = { version = "0.34", default-features = false, features = ["default_fonts", "glow", "persistence", "wayland", "x11"] }
+
+egui-components-theme = { path = "crates/theme", version = "0.1.0" }
+egui-components = { path = "crates/components", version = "0.1.0" }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

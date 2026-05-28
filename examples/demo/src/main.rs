@@ -4,7 +4,7 @@
 
 use eframe::egui;
 use egui_components as sc;
-use egui_components_theme::{Theme, ThemeMode};
+use egui_components_theme::{presets, Theme, ThemeMode};
 
 fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
@@ -25,6 +25,9 @@ fn main() -> eframe::Result<()> {
 
 struct DemoApp {
     mode: ThemeMode,
+    /// Index into [`presets::ALL`]. `None` means a built-in `Theme::light/dark`
+    /// is installed (from the dark-mode switch) rather than a bundled preset.
+    preset_idx: Option<usize>,
     text: String,
     password: String,
     checked: bool,
@@ -41,6 +44,7 @@ impl Default for DemoApp {
     fn default() -> Self {
         Self {
             mode: ThemeMode::Light,
+            preset_idx: None,
             text: String::new(),
             password: String::new(),
             checked: true,
@@ -79,13 +83,53 @@ impl eframe::App for DemoApp {
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                         let mut dark = matches!(self.mode, ThemeMode::Dark);
                         let was = dark;
-                        ui.add(sc::Switch::new(&mut dark));
+                        let opposite = if dark { ThemeMode::Light } else { ThemeMode::Dark };
+                        let mode_switch_enabled = match self.preset_idx {
+                            None => true,
+                            Some(i) => {
+                                let family = presets::ALL[i].family;
+                                presets::ALL
+                                    .iter()
+                                    .any(|p| p.family == family && p.theme.mode == opposite)
+                            }
+                        };
+                        ui.add(sc::Switch::new(&mut dark).disabled(!mode_switch_enabled));
                         ui.add(sc::Label::new("Dark mode").muted());
                         if dark != was {
-                            self.mode =
+                            let new_mode =
                                 if dark { ThemeMode::Dark } else { ThemeMode::Light };
-                            let new_theme = if dark { Theme::dark() } else { Theme::light() };
-                            new_theme.install(&ctx);
+                            self.mode = new_mode;
+                            let sibling = self.preset_idx.and_then(|i| {
+                                let family = presets::ALL[i].family;
+                                presets::ALL
+                                    .iter()
+                                    .position(|p| p.family == family && p.theme.mode == new_mode)
+                            });
+                            if let Some(j) = sibling {
+                                presets::ALL[j].theme.install(&ctx);
+                                self.preset_idx = Some(j);
+                            } else {
+                                let new_theme =
+                                    if dark { Theme::dark() } else { Theme::light() };
+                                new_theme.install(&ctx);
+                                self.preset_idx = None;
+                            }
+                        }
+
+                        ui.add_space(16.0);
+                        let label = match self.preset_idx {
+                            Some(i) => format!("Theme: {} →", presets::ALL[i].name),
+                            None => "Theme: Default →".to_string(),
+                        };
+                        if ui.add(sc::Button::secondary(label)).clicked() {
+                            let next = self
+                                .preset_idx
+                                .map(|i| (i + 1) % presets::ALL.len())
+                                .unwrap_or(0);
+                            let theme = presets::ALL[next].theme;
+                            theme.install(&ctx);
+                            self.preset_idx = Some(next);
+                            self.mode = theme.mode;
                         }
                     });
                 });

@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Theme tokens for egui, ported from longbridge/gpui-component"
+build = "build.rs"
 
 [dependencies]
 egui.workspace = true
+
+[build-dependencies]
+serde_json = "1"

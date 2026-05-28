@@ -15,6 +15,7 @@
 //! startup (or whenever the user toggles light/dark) is all that's required.
 
 pub mod palette;
+pub mod presets;
 pub mod theme;
 pub mod tokens;
 

@@ -22,10 +22,13 @@ pub mod checkbox;
 pub mod common;
 pub mod input;
 pub mod label;
+pub mod list;
 pub mod separator;
 pub mod slider;
 pub mod switch;
+pub mod tabs;
 pub mod tag;
+pub mod tree;
 
 pub use alert::Alert;
 pub use badge::Badge;
@@ -34,9 +37,12 @@ pub use checkbox::Checkbox;
 pub use common::{Size, Variant};
 pub use input::Input;
 pub use label::{Label, LabelTone};
+pub use list::{List, ListItem};
 pub use separator::Separator;
 pub use slider::Slider;
 pub use switch::Switch;
+pub use tabs::{TabVariant, Tabs};
 pub use tag::{Tag, TagResponse};
+pub use tree::{Tree, TreeNode, TreeState};
 
 pub use egui_components_theme as theme;

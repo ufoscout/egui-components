@@ -38,6 +38,12 @@ struct DemoApp {
     show_tag2: bool,
     show_tag3: bool,
     click_counter: usize,
+    underline_tab: usize,
+    pill_tab: usize,
+    segmented_tab: usize,
+    list_selected: Option<usize>,
+    tree_state: sc::TreeState,
+    tree_nodes: Vec<sc::TreeNode>,
 }
 
 impl Default for DemoApp {
@@ -55,8 +61,59 @@ impl Default for DemoApp {
             show_tag2: true,
             show_tag3: true,
             click_counter: 0,
+            underline_tab: 0,
+            pill_tab: 0,
+            segmented_tab: 0,
+            list_selected: Some(1),
+            tree_state: {
+                let mut s = sc::TreeState::new();
+                s.expand(egui::Id::new("src"));
+                s
+            },
+            tree_nodes: sample_tree(),
         }
     }
+}
+
+fn find_label(nodes: &[sc::TreeNode], id: egui::Id) -> Option<&str> {
+    for n in nodes {
+        if n.id == id {
+            return Some(label_text(&n.label));
+        }
+        if let Some(s) = find_label(&n.children, id) {
+            return Some(s);
+        }
+    }
+    None
+}
+
+fn label_text(t: &egui::WidgetText) -> &str {
+    match t {
+        egui::WidgetText::RichText(rt) => rt.text(),
+        _ => "",
+    }
+}
+
+fn sample_tree() -> Vec<sc::TreeNode> {
+    use sc::TreeNode;
+    vec![
+        TreeNode::new("src", "src").with_children(vec![
+            TreeNode::new("src/components", "components").with_children(vec![
+                TreeNode::new("src/components/button.rs", "button.rs"),
+                TreeNode::new("src/components/tabs.rs", "tabs.rs"),
+                TreeNode::new("src/components/tree.rs", "tree.rs"),
+            ]),
+            TreeNode::new("src/lib.rs", "lib.rs"),
+            TreeNode::new("src/main.rs", "main.rs"),
+        ]),
+        TreeNode::new("themes", "themes").with_children(vec![
+            TreeNode::new("themes/catppuccin.json", "catppuccin.json"),
+            TreeNode::new("themes/gruvbox.json", "gruvbox.json"),
+            TreeNode::new("themes/solarized.json", "solarized.json"),
+        ]),
+        TreeNode::new("Cargo.toml", "Cargo.toml"),
+        TreeNode::new("README.md", "README.md"),
+    ]
 }
 
 impl eframe::App for DemoApp {
@@ -152,6 +209,12 @@ impl eframe::App for DemoApp {
                     self.section(ui, "Tags", |this, ui| this.tags(ui));
                     ui.add_space(20.0);
                     self.section(ui, "Alerts", |this, ui| this.alerts(ui));
+                    ui.add_space(20.0);
+                    self.section(ui, "Tabs", |this, ui| this.tabs(ui));
+                    ui.add_space(20.0);
+                    self.section(ui, "List", |this, ui| this.list(ui));
+                    ui.add_space(20.0);
+                    self.section(ui, "Tree", |this, ui| this.tree(ui));
                 });
             });
     }
@@ -313,6 +376,118 @@ impl DemoApp {
                 self.show_tag2 = true;
                 self.show_tag3 = true;
             }
+        });
+    }
+
+    fn tabs(&mut self, ui: &mut egui::Ui) {
+        ui.add(sc::Label::new("Underline").muted());
+        ui.add(
+            sc::Tabs::new(&mut self.underline_tab)
+                .tab("Overview")
+                .tab("Activity")
+                .tab("Members")
+                .disabled_tab("Billing")
+                .underline(),
+        );
+        ui.add_space(10.0);
+        ui.add(sc::Label::new("Pill").muted());
+        ui.add(
+            sc::Tabs::new(&mut self.pill_tab)
+                .tabs(["Day", "Week", "Month", "Year"])
+                .pill()
+                .small(),
+        );
+        ui.add_space(10.0);
+        ui.add(sc::Label::new("Segmented").muted());
+        ui.add(
+            sc::Tabs::new(&mut self.segmented_tab)
+                .tabs(["List", "Board", "Calendar"])
+                .segmented(),
+        );
+        ui.add_space(6.0);
+        ui.add(sc::Label::new(format!(
+            "Selected — underline: {}, pill: {}, segmented: {}",
+            self.underline_tab, self.pill_tab, self.segmented_tab
+        )).muted());
+    }
+
+    fn list(&mut self, ui: &mut egui::Ui) {
+        let items = [
+            ("Inbox", "12"),
+            ("Drafts", "3"),
+            ("Sent", ""),
+            ("Spam", "97"),
+            ("Trash", ""),
+            ("Archive", ""),
+        ];
+        ui.horizontal(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(260.0, 240.0),
+                egui::Layout::top_down_justified(egui::Align::LEFT),
+                |ui| {
+                    sc::List::new("demo-list-inbox").max_height(240.0).show(ui, |ui| {
+                        for (i, (name, count)) in items.iter().enumerate() {
+                            let mut item = sc::ListItem::new(*name)
+                                .selected(self.list_selected == Some(i))
+                                .confirmed(i == 2);
+                            if !count.is_empty() {
+                                item = item.secondary(*count);
+                            }
+                            if ui.add(item).clicked() {
+                                self.list_selected = Some(i);
+                            }
+                        }
+                    });
+                },
+            );
+            ui.add_space(16.0);
+            ui.vertical(|ui| {
+                ui.add(sc::Label::new("Selected").muted());
+                let label = self
+                    .list_selected
+                    .and_then(|i| items.get(i).map(|(n, _)| *n))
+                    .unwrap_or("(none)");
+                ui.add(sc::Label::new(label).strong().size(sc::Size::Large));
+                ui.add_space(8.0);
+                ui.add(sc::Label::new("Click a row to select. The 'Sent' row also has the `confirmed` check icon enabled to show off that slot."));
+            });
+        });
+    }
+
+    fn tree(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            ui.allocate_ui_with_layout(
+                egui::vec2(300.0, 300.0),
+                egui::Layout::top_down_justified(egui::Align::LEFT),
+                |ui| {
+                    sc::List::new("demo-list-tree").max_height(300.0).show(ui, |ui| {
+                        ui.add(
+                            sc::Tree::new(&self.tree_nodes, &mut self.tree_state),
+                        );
+                    });
+                },
+            );
+            ui.add_space(16.0);
+            ui.vertical(|ui| {
+                ui.add(sc::Label::new("Selected").muted());
+                let selected = match self.tree_state.selected {
+                    Some(id) => find_label(&self.tree_nodes, id)
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "(unknown)".to_string()),
+                    None => "(none)".to_string(),
+                };
+                ui.add(sc::Label::new(selected).strong().size(sc::Size::Large));
+                ui.add_space(8.0);
+                ui.add(sc::Label::new("Click folders to expand/collapse. Leaves just select."));
+                ui.add_space(8.0);
+                if ui.add(sc::Button::secondary("Collapse all").small()).clicked() {
+                    self.tree_state.expanded.clear();
+                }
+                if ui.add(sc::Button::secondary("Expand src/").small()).clicked() {
+                    self.tree_state.expand(egui::Id::new("src"));
+                    self.tree_state.expand(egui::Id::new("src/components"));
+                }
+            });
         });
     }
 

@@ -75,7 +75,7 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 | Kbd | Pending |
 | Label | [Migrated](crates/components/src/label.rs) |
 | Link | Pending |
-| List | Pending |
+| List | [Migrated](crates/components/src/list.rs) |
 | Menu | Pending |
 | Notification | Pending |
 | NumberInput | Pending |
@@ -97,13 +97,13 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 | Spinner | Pending |
 | Stepper | Pending |
 | Switch | [Migrated](crates/components/src/switch.rs) |
-| Tab | Pending |
+| Tab | [Migrated](crates/components/src/tabs.rs) |
 | Table | Pending |
 | Tag | [Migrated](crates/components/src/tag.rs) |
 | Text | Pending |
 | TitleBar | Pending |
 | Tooltip | Pending |
-| Tree | Pending |
+| Tree | [Migrated](crates/components/src/tree.rs) |
 
 ## Status
 

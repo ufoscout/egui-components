@@ -43,6 +43,9 @@ pub use slider::Slider;
 pub use switch::Switch;
 pub use tabs::{TabVariant, Tabs};
 pub use tag::{Tag, TagResponse};
-pub use tree::{Tree, TreeNode, TreeState};
+pub use tree::{
+    show_themed as show_themed_tree, Tree, TreeAction, TreeView, TreeViewBuilder,
+    TreeViewSettings, TreeViewState,
+};
 
 pub use egui_components_theme as theme;

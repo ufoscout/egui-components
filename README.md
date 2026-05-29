@@ -103,7 +103,7 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 | Text | Pending |
 | TitleBar | Pending |
 | Tooltip | Pending |
-| Tree | [Migrated](crates/components/src/tree.rs) |
+| Tree | Done by using [egui_ltreeview](https://crates.io/crates/egui_ltreeview)|
 
 ## Status
 

@@ -134,65 +134,116 @@ impl<'a> Tabs<'a> {
             TabVariant::Segmented => 3.0,
             _ => 0.0,
         };
-        let total_w: f32 = widths.iter().sum::<f32>()
-            + gap * (self.tabs.len() as f32 - 1.0).max(0.0)
-            + outer_pad * 2.0;
-        let total_h = height + outer_pad * 2.0;
+        let row_h = height + outer_pad * 2.0;
+        let row_gap_y = 4.0;
 
-        let (rect, response) = ui.allocate_exact_size(vec2(total_w, total_h), Sense::hover());
+        // Greedy line-fit: pack tabs into rows constrained by available width.
+        // The first tab on a row always fits, even if its own width already
+        // exceeds the available area (it just overflows that single row).
+        //
+        // `ui.available_width()` is unreliable inside an `egui::ScrollArea`
+        // that has previously expanded to fit wider content — after the user
+        // shrinks the window, the layout's reported available width can
+        // remain stuck at the prior, wider content size. The visible viewport
+        // (`clip_rect`) is always trimmed to the actual window, so we cap
+        // against it: this is what's actually paintable without scroll-
+        // clipping the tabs.
+        let visible_w =
+            (ui.clip_rect().right() - ui.cursor().min.x).max(0.0);
+        let available_w = ui.available_width().min(visible_w);
+        let mut rows: Vec<std::ops::Range<usize>> = Vec::new();
+        {
+            let mut start = 0usize;
+            let mut row_w = outer_pad * 2.0 + widths[0];
+            for i in 1..widths.len() {
+                let next_w = row_w + gap + widths[i];
+                if next_w > available_w {
+                    rows.push(start..i);
+                    start = i;
+                    row_w = outer_pad * 2.0 + widths[i];
+                } else {
+                    row_w = next_w;
+                }
+            }
+            rows.push(start..widths.len());
+        }
+
+        let row_count = rows.len();
+        let total_h = row_h * row_count as f32
+            + row_gap_y * row_count.saturating_sub(1) as f32;
+        let (rect, response) =
+            ui.allocate_exact_size(vec2(available_w, total_h), Sense::hover());
 
         if !ui.is_rect_visible(rect) {
             return response;
         }
 
-        // Container background for segmented variant
-        let painter = ui.painter();
-        if matches!(self.variant, TabVariant::Segmented) {
-            painter.rect_filled(rect, theme.corner(), c.muted_background);
-        }
-        if matches!(self.variant, TabVariant::Underline) {
-            // Bottom border under the whole bar
-            painter.line_segment(
-                [
-                    pos2(rect.left(), rect.bottom() - 1.0),
-                    pos2(rect.right(), rect.bottom() - 1.0),
-                ],
-                Stroke::new(1.0, c.border),
-            );
-        }
-
-        let mut x = rect.left() + outer_pad;
-        let y = rect.top() + outer_pad;
         let mut clicked_idx: Option<usize> = None;
 
-        for (i, galley) in galleys.iter().enumerate() {
-            let w = widths[i];
-            let tab_rect = Rect::from_min_size(pos2(x, y), vec2(w, height));
-            let disabled = self.disabled[i];
-            let id = response.id.with(("tab", i));
-            let sense = if disabled { Sense::hover() } else { Sense::click() };
-            let tab_resp = ui.interact(tab_rect, id, sense);
-            let is_selected = *self.selected == i;
+        for (row_idx, row) in rows.iter().enumerate() {
+            let row_top = rect.top() + (row_h + row_gap_y) * row_idx as f32;
 
-            paint_tab(
-                ui,
-                tab_rect,
-                &tab_resp,
-                &theme,
-                self.variant,
-                is_selected,
-                disabled,
-                galley,
+            // Width actually consumed by this row's tabs (used to size the
+            // segmented bar / underline that sits behind them).
+            let mut row_tab_total = 0.0;
+            for (j, i) in row.clone().enumerate() {
+                if j > 0 {
+                    row_tab_total += gap;
+                }
+                row_tab_total += widths[i];
+            }
+            let row_total_w = row_tab_total + outer_pad * 2.0;
+
+            let row_rect = Rect::from_min_size(
+                pos2(rect.left(), row_top),
+                vec2(row_total_w, row_h),
             );
 
-            if tab_resp.clicked() && !disabled {
-                clicked_idx = Some(i);
+            if matches!(self.variant, TabVariant::Segmented) {
+                ui.painter()
+                    .rect_filled(row_rect, theme.corner(), c.muted_background);
             }
-            if !disabled && tab_resp.hovered() {
-                ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+            if matches!(self.variant, TabVariant::Underline) {
+                ui.painter().line_segment(
+                    [
+                        pos2(row_rect.left(), row_rect.bottom() - 1.0),
+                        pos2(row_rect.right(), row_rect.bottom() - 1.0),
+                    ],
+                    Stroke::new(1.0, c.border),
+                );
             }
 
-            x += w + gap;
+            let mut x = rect.left() + outer_pad;
+            let tab_y = row_top + outer_pad;
+            for i in row.clone() {
+                let w = widths[i];
+                let tab_rect = Rect::from_min_size(pos2(x, tab_y), vec2(w, height));
+                let disabled = self.disabled[i];
+                let id = response.id.with(("tab", i));
+                let sense = if disabled { Sense::hover() } else { Sense::click() };
+                let tab_resp = ui.interact(tab_rect, id, sense);
+                let is_selected = *self.selected == i;
+
+                paint_tab(
+                    ui,
+                    tab_rect,
+                    &tab_resp,
+                    &theme,
+                    self.variant,
+                    is_selected,
+                    disabled,
+                    &galleys[i],
+                );
+
+                if tab_resp.clicked() && !disabled {
+                    clicked_idx = Some(i);
+                }
+                if !disabled && tab_resp.hovered() {
+                    ui.ctx().set_cursor_icon(egui::CursorIcon::PointingHand);
+                }
+
+                x += w + gap;
+            }
         }
 
         if let Some(i) = clicked_idx {

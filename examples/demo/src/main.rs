@@ -41,9 +41,9 @@ struct DemoApp {
     underline_tab: usize,
     pill_tab: usize,
     segmented_tab: usize,
+    wrap_tab: usize,
     list_selected: Option<usize>,
-    tree_state: sc::TreeState,
-    tree_nodes: Vec<sc::TreeNode>,
+    tree_selected: Option<&'static str>,
 }
 
 impl Default for DemoApp {
@@ -64,56 +64,11 @@ impl Default for DemoApp {
             underline_tab: 0,
             pill_tab: 0,
             segmented_tab: 0,
+            wrap_tab: 0,
             list_selected: Some(1),
-            tree_state: {
-                let mut s = sc::TreeState::new();
-                s.expand(egui::Id::new("src"));
-                s
-            },
-            tree_nodes: sample_tree(),
+            tree_selected: None,
         }
     }
-}
-
-fn find_label(nodes: &[sc::TreeNode], id: egui::Id) -> Option<&str> {
-    for n in nodes {
-        if n.id == id {
-            return Some(label_text(&n.label));
-        }
-        if let Some(s) = find_label(&n.children, id) {
-            return Some(s);
-        }
-    }
-    None
-}
-
-fn label_text(t: &egui::WidgetText) -> &str {
-    match t {
-        egui::WidgetText::RichText(rt) => rt.text(),
-        _ => "",
-    }
-}
-
-fn sample_tree() -> Vec<sc::TreeNode> {
-    use sc::TreeNode;
-    vec![
-        TreeNode::new("src", "src").with_children(vec![
-            TreeNode::new("src/components", "components").with_children(vec![
-                TreeNode::new("src/components/button.rs", "button.rs"),
-                TreeNode::new("src/components/tabs.rs", "tabs.rs"),
-                TreeNode::new("src/components/tree.rs", "tree.rs"),
-            ]),
-            TreeNode::new("src/lib.rs", "lib.rs"),
-            TreeNode::new("src/main.rs", "main.rs"),
-        ]),
-        TreeNode::new("themes", "themes").with_children(vec![
-            TreeNode::new("themes/catppuccin.json", "catppuccin.json"),
-            TreeNode::new("themes/gruvbox.json", "gruvbox.json"),
-            TreeNode::new("themes/solarized.json", "solarized.json"),
-        ]),
-        TreeNode::new("Cargo.toml", "Cargo.toml"),
-        TreeNode::new("README.md", "README.md"),
-    ]
 }
 
 impl eframe::App for DemoApp {
@@ -175,8 +130,8 @@ impl eframe::App for DemoApp {
 
                         ui.add_space(16.0);
                         let label = match self.preset_idx {
-                            Some(i) => format!("Theme: {} →", presets::ALL[i].name),
-                            None => "Theme: Default →".to_string(),
+                            Some(i) => format!("Theme: {} >", presets::ALL[i].name),
+                            None => "Theme: Default >".to_string(),
                         };
                         if ui.add(sc::Button::secondary(label)).clicked() {
                             let next = self
@@ -200,6 +155,8 @@ impl eframe::App for DemoApp {
             )
             .show_inside(ui, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
+                    self.section(ui, "Tabs", |this, ui| this.tabs(ui));
+                    ui.add_space(20.0);
                     self.section(ui, "Buttons", |this, ui| this.buttons(ui));
                     ui.add_space(20.0);
                     self.section(ui, "Inputs & Toggles", |this, ui| this.inputs_toggles(ui));
@@ -209,8 +166,6 @@ impl eframe::App for DemoApp {
                     self.section(ui, "Tags", |this, ui| this.tags(ui));
                     ui.add_space(20.0);
                     self.section(ui, "Alerts", |this, ui| this.alerts(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Tabs", |this, ui| this.tabs(ui));
                     ui.add_space(20.0);
                     self.section(ui, "List", |this, ui| this.list(ui));
                     ui.add_space(20.0);
@@ -274,7 +229,7 @@ impl DemoApp {
                 ui.add(sc::Label::new("Password"));
                 ui.add(
                     sc::Input::new(&mut self.password)
-                        .placeholder("••••••••")
+                        .placeholder("********")
                         .password(true)
                         .width(220.0),
                 );
@@ -404,10 +359,30 @@ impl DemoApp {
                 .tabs(["List", "Board", "Calendar"])
                 .segmented(),
         );
+        ui.add_space(10.0);
+        ui.add(sc::Label::new("Wrapping (resize the window to see rows reflow)").muted());
+        ui.add(
+            sc::Tabs::new(&mut self.wrap_tab)
+                .tabs([
+                    "Dashboard",
+                    "Issues",
+                    "Pull requests",
+                    "Discussions",
+                    "Actions",
+                    "Projects",
+                    "Wiki",
+                    "Security",
+                    "Insights",
+                    "Settings",
+                    "Releases",
+                    "Packages",
+                ])
+                .pill(),
+        );
         ui.add_space(6.0);
         ui.add(sc::Label::new(format!(
-            "Selected — underline: {}, pill: {}, segmented: {}",
-            self.underline_tab, self.pill_tab, self.segmented_tab
+            "Selected - underline: {}, pill: {}, segmented: {}, wrapping: {}",
+            self.underline_tab, self.pill_tab, self.segmented_tab, self.wrap_tab
         )).muted());
     }
 
@@ -461,32 +436,53 @@ impl DemoApp {
                 egui::Layout::top_down_justified(egui::Align::LEFT),
                 |ui| {
                     sc::List::new("demo-list-tree").max_height(300.0).show(ui, |ui| {
-                        ui.add(
-                            sc::Tree::new(&self.tree_nodes, &mut self.tree_state),
-                        );
+                        let id = ui.make_persistent_id("demo-tree");
+                        let (_resp, actions) = sc::show_themed_tree(ui, id, |b| {
+                            if b.dir("src", "src") {
+                                if b.dir("src/components", "components") {
+                                    b.leaf("src/components/button.rs", "button.rs");
+                                    b.leaf("src/components/tabs.rs", "tabs.rs");
+                                    b.leaf("src/components/tree.rs", "tree.rs");
+                                }
+                                b.close_dir();
+                                b.leaf("src/lib.rs", "lib.rs");
+                                b.leaf("src/main.rs", "main.rs");
+                            }
+                            b.close_dir();
+                            if b.dir("themes", "themes") {
+                                b.leaf("themes/catppuccin.json", "catppuccin.json");
+                                b.leaf("themes/gruvbox.json", "gruvbox.json");
+                                b.leaf("themes/solarized.json", "solarized.json");
+                            }
+                            b.close_dir();
+                            b.leaf("Cargo.toml", "Cargo.toml");
+                            b.leaf("README.md", "README.md");
+                        });
+                        for action in actions {
+                            if let sc::TreeAction::SetSelected(ids) = action {
+                                self.tree_selected = ids.into_iter().next();
+                            }
+                        }
                     });
                 },
             );
             ui.add_space(16.0);
             ui.vertical(|ui| {
                 ui.add(sc::Label::new("Selected").muted());
-                let selected = match self.tree_state.selected {
-                    Some(id) => find_label(&self.tree_nodes, id)
-                        .map(|s| s.to_string())
-                        .unwrap_or_else(|| "(unknown)".to_string()),
-                    None => "(none)".to_string(),
-                };
-                ui.add(sc::Label::new(selected).strong().size(sc::Size::Large));
+                let mut selected_text =
+                    self.tree_selected.map(|s| s.to_string()).unwrap_or_default();
+                ui.add(
+                    sc::Input::new(&mut selected_text)
+                        .disabled(true)
+                        .width(260.0),
+                );
                 ui.add_space(8.0);
-                ui.add(sc::Label::new("Click folders to expand/collapse. Leaves just select."));
-                ui.add_space(8.0);
-                if ui.add(sc::Button::secondary("Collapse all").small()).clicked() {
-                    self.tree_state.expanded.clear();
-                }
-                if ui.add(sc::Button::secondary("Expand src/").small()).clicked() {
-                    self.tree_state.expand(egui::Id::new("src"));
-                    self.tree_state.expand(egui::Id::new("src/components"));
-                }
+                ui.add(sc::Label::new(
+                    "Click a row to focus the tree, then use the Up/Down arrow \
+                     keys to move the selection, Right to expand a folder, and \
+                     Left to collapse it (or jump to its parent). Keyboard nav \
+                     is provided by egui_ltreeview.",
+                ));
             });
         });
     }

@@ -15,34 +15,64 @@
 //!
 //! Components read the installed theme via [`egui_components_theme::Theme::get`].
 
+pub mod accordion;
 pub mod alert;
+pub mod avatar;
 pub mod badge;
 pub mod button;
+pub mod card;
 pub mod checkbox;
 pub mod common;
+pub mod dialog;
+pub mod icon;
 pub mod input;
 pub mod label;
 pub mod list;
+pub mod menu;
+pub mod notification;
+pub mod number_input;
+pub mod otp_input;
+pub mod progress;
+pub mod resizable;
+pub mod select;
 pub mod separator;
+pub mod sidebar;
 pub mod slider;
 pub mod switch;
 pub mod tabs;
 pub mod tag;
+pub mod titlebar;
+pub mod tooltip;
 pub mod tree;
 
+pub use accordion::Accordion;
 pub use alert::Alert;
+pub use avatar::{Avatar, AvatarShape, AvatarStatus};
 pub use badge::Badge;
 pub use button::Button;
+pub use card::Card;
 pub use checkbox::Checkbox;
 pub use common::{Size, Variant};
+pub use dialog::{AlertChoice, AlertDialog, Dialog};
+pub use icon::{Icon, IconKind};
 pub use input::Input;
 pub use label::{Label, LabelTone};
 pub use list::{List, ListItem};
+pub use menu::Menu;
+pub use notification::{ToastAnchor, Toasts};
+pub use number_input::NumberInput;
+pub use otp_input::OtpInput;
+pub use progress::Progress;
+pub use resizable::Resizable;
+pub use select::Select;
 pub use separator::Separator;
+pub use sidebar::{Sidebar, SidebarUi};
 pub use slider::Slider;
 pub use switch::Switch;
 pub use tabs::{TabVariant, Tabs};
 pub use tag::{Tag, TagResponse};
+pub use titlebar::TitleBar;
+pub use tooltip::Tooltip;
 pub use tree::{
     show_themed as show_themed_tree, Tree, TreeAction, TreeView, TreeViewBuilder,
     TreeViewSettings, TreeViewState,

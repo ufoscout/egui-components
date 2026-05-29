@@ -11,7 +11,7 @@ This is **not** a 1:1 translation. GPUI is retained / reactive while egui is imm
 | Crate | What it provides |
 |-------|------------------|
 | `egui-components-theme` | Tailwind color palette, semantic tokens, light/dark `Theme` + helper to install it into `egui::Style` |
-| `egui-components` | Components: `Button`, `Checkbox`, `Switch`, `Slider`, `Input`, `Badge`, `Label`, `Separator`, `Alert`, `Tag` |
+| `egui-components` | Components: `Button`, `Checkbox`, `Switch`, `Slider`, `Input`, `NumberInput`, `OtpInput`, `Select`/Combobox, `Avatar`, `Card`, `Tooltip`, `Badge`, `Label`, `Separator`, `Alert`, `Tag`, `Icon`, `Progress`, `Accordion`, `Menu`, `Notification`/`Toasts`, `Dialog`, `AlertDialog`, `Resizable`, `Sidebar`, `TitleBar` |
 | `examples/demo` | eframe app demonstrating all components with a light/dark toggle |
 
 ## Run the demo
@@ -50,10 +50,10 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 
 | Component | Status |
 |-----------|--------|
-| Accordion | Pending |
+| Accordion | [Migrated](crates/components/src/accordion.rs) |
 | Alert | [Migrated](crates/components/src/alert.rs) |
-| AlertDialog | Pending |
-| Avatar | Pending |
+| AlertDialog | [Migrated](crates/components/src/dialog.rs) |
+| Avatar | [Migrated](crates/components/src/avatar.rs) |
 | Badge | [Migrated](crates/components/src/badge.rs) |
 | Breadcrumb | Pending |
 | Button | [Migrated](crates/components/src/button.rs) |
@@ -62,36 +62,36 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 | Checkbox | [Migrated](crates/components/src/checkbox.rs) |
 | Collapsible | Pending |
 | ColorPicker | Pending |
-| Combobox | Pending |
+| Combobox | [Migrated](crates/components/src/select.rs) (as `Select::combobox`) |
 | DatePicker | Pending |
 | DescriptionList | Pending |
-| Dialog | Pending |
+| Dialog | [Migrated](crates/components/src/dialog.rs) |
 | Dock | Pending |
 | Form | Pending |
-| GroupBox | Pending |
+| GroupBox | [Migrated](crates/components/src/card.rs) (as `Card`) |
 | HoverCard | Pending |
-| Icon | Pending |
+| Icon | [Migrated](crates/components/src/icon.rs) |
 | Input | [Migrated](crates/components/src/input.rs) |
 | Kbd | Pending |
 | Label | [Migrated](crates/components/src/label.rs) |
 | Link | Pending |
 | List | [Migrated](crates/components/src/list.rs) |
-| Menu | Pending |
-| Notification | Pending |
-| NumberInput | Pending |
-| OtpInput | Pending |
+| Menu | [Migrated](crates/components/src/menu.rs) |
+| Notification | [Migrated](crates/components/src/notification.rs) |
+| NumberInput | [Migrated](crates/components/src/number_input.rs) |
+| OtpInput | [Migrated](crates/components/src/otp_input.rs) |
 | Pagination | Pending |
 | Plot | Pending |
 | Popover | Pending |
-| Progress | Pending |
+| Progress | [Migrated](crates/components/src/progress.rs) |
 | Radio | Pending |
 | Rating | Pending |
-| Resizable | Pending |
+| Resizable | [Migrated](crates/components/src/resizable.rs) |
 | SearchableList | Pending |
-| Select | Pending |
+| Select | [Migrated](crates/components/src/select.rs) |
 | Separator | [Migrated](crates/components/src/separator.rs) |
 | Sheet | Pending |
-| Sidebar | Pending |
+| Sidebar | [Migrated](crates/components/src/sidebar.rs) |
 | Skeleton | Pending |
 | Slider | [Migrated](crates/components/src/slider.rs) |
 | Spinner | Pending |
@@ -101,13 +101,13 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 | Table | Pending |
 | Tag | [Migrated](crates/components/src/tag.rs) |
 | Text | Pending |
-| TitleBar | Pending |
-| Tooltip | Pending |
+| TitleBar | [Migrated](crates/components/src/titlebar.rs) |
+| Tooltip | [Migrated](crates/components/src/tooltip.rs) |
 | Tree | Done by using [egui_ltreeview](https://crates.io/crates/egui_ltreeview)|
 
 ## Status
 
-This is an initial subset of the upstream library. The components shipped here have working visuals, variants/sizes, hover/active states, and interaction states. Many upstream components (`Dock`, `Table`, `CodeEditor`, `Chart`, `Calendar`, `Form`, `Menu`, …) are not yet ported because they require substantial framework-specific work (virtualization, focus traps, complex layout primitives) that has no direct egui equivalent and would each take significant additional effort.
+This is an initial subset of the upstream library. The components shipped here have working visuals, variants/sizes, hover/active states, and interaction states. Many upstream components (`Dock`, `Table`, `CodeEditor`, `Chart`, `Calendar`, `Form`, …) are not yet ported because they require substantial framework-specific work (virtualization, focus traps, complex layout primitives) that has no direct egui equivalent and would each take significant additional effort.
 
 ## License
 

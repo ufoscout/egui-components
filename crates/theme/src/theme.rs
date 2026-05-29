@@ -125,6 +125,10 @@ impl Theme {
         CornerRadius::same(self.metrics.radius_sm as u8)
     }
 
+    pub fn corner_lg(&self) -> CornerRadius {
+        CornerRadius::same(self.metrics.radius_lg as u8)
+    }
+
     pub fn border_stroke(&self) -> Stroke {
         Stroke::new(self.metrics.border_width, self.colors.border)
     }

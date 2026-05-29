@@ -12,6 +12,7 @@
 
 use std::ops::RangeInclusive;
 
+use crate::common::Size;
 use egui::{pos2, vec2, FontId, Rect, Response, Sense, Stroke, Ui, Widget};
 use egui_components_theme::{mix, Theme};
 
@@ -23,6 +24,7 @@ pub struct NumberInput<'a> {
     precision: usize,
     width: Option<f32>,
     disabled: bool,
+    size: Size,
 }
 
 impl<'a> NumberInput<'a> {
@@ -35,6 +37,7 @@ impl<'a> NumberInput<'a> {
             precision: 0,
             width: None,
             disabled: false,
+            size: Size::Medium,
         }
     }
 
@@ -60,6 +63,16 @@ impl<'a> NumberInput<'a> {
         self.disabled = d;
         self
     }
+    pub fn size(mut self, s: Size) -> Self {
+        self.size = s;
+        self
+    }
+    pub fn small(self) -> Self {
+        self.size(Size::Small)
+    }
+    pub fn large(self) -> Self {
+        self.size(Size::Large)
+    }
 
     fn format(&self, v: f64) -> String {
         format!("{:.*}", self.precision, v)
@@ -72,7 +85,7 @@ impl<'a> Widget for NumberInput<'a> {
         let m = theme.metrics;
         let c = theme.colors;
 
-        let height = m.input_height;
+        let height = self.size.input_height(&m);
         let step_w = height; // square stepper buttons
         let width = self
             .width

@@ -3,6 +3,7 @@
 //! Wraps [`egui::TextEdit::singleline`] with theme-aware framing (border,
 //! focus ring, padding, optional placeholder + leading/trailing label).
 
+use crate::common::Size;
 use egui::{vec2, FontId, Response, Sense, Stroke, Ui, Widget};
 use egui_components_theme::{mix, Theme};
 
@@ -12,6 +13,7 @@ pub struct Input<'a> {
     width: Option<f32>,
     password: bool,
     disabled: bool,
+    size: Size,
 }
 
 impl<'a> Input<'a> {
@@ -22,6 +24,7 @@ impl<'a> Input<'a> {
             width: None,
             password: false,
             disabled: false,
+            size: Size::Medium,
         }
     }
     pub fn placeholder(mut self, p: impl Into<String>) -> Self {
@@ -40,6 +43,16 @@ impl<'a> Input<'a> {
         self.disabled = d;
         self
     }
+    pub fn size(mut self, s: Size) -> Self {
+        self.size = s;
+        self
+    }
+    pub fn small(self) -> Self {
+        self.size(Size::Small)
+    }
+    pub fn large(self) -> Self {
+        self.size(Size::Large)
+    }
 }
 
 impl<'a> Widget for Input<'a> {
@@ -47,7 +60,7 @@ impl<'a> Widget for Input<'a> {
         let theme = Theme::get(ui.ctx());
         let m = theme.metrics;
         let c = theme.colors;
-        let height = m.input_height;
+        let height = self.size.input_height(&m);
         let width = self.width.unwrap_or_else(|| ui.available_width().min(240.0));
         let desired = vec2(width, height);
 

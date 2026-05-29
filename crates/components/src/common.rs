@@ -37,6 +37,14 @@ impl Size {
         }
     }
 
+    pub fn input_height(&self, m: &egui_components_theme::ThemeMetrics) -> f32 {
+        match self {
+            Size::Small => m.input_height_sm,
+            Size::Medium => m.input_height,
+            Size::Large => m.input_height_lg,
+        }
+    }
+
     pub fn button_padding_x(&self, m: &egui_components_theme::ThemeMetrics) -> f32 {
         match self {
             Size::Small => m.button_padding_x_sm,

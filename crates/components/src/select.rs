@@ -20,6 +20,7 @@ use egui::{
 };
 use egui_components_theme::{mix, Theme};
 
+use crate::common::Size;
 use crate::input::Input;
 use crate::list::ListItem;
 
@@ -32,6 +33,7 @@ pub struct Select<'a> {
     max_dropdown_height: f32,
     disabled: bool,
     searchable: bool,
+    size: Size,
 }
 
 impl<'a> Select<'a> {
@@ -45,6 +47,7 @@ impl<'a> Select<'a> {
             max_dropdown_height: 240.0,
             disabled: false,
             searchable: false,
+            size: Size::Medium,
         }
     }
 
@@ -85,6 +88,16 @@ impl<'a> Select<'a> {
         self.searchable = true;
         self
     }
+    pub fn size(mut self, s: Size) -> Self {
+        self.size = s;
+        self
+    }
+    pub fn small(self) -> Self {
+        self.size(Size::Small)
+    }
+    pub fn large(self) -> Self {
+        self.size(Size::Large)
+    }
 
     /// Render the select. The returned [`Response`] reports `.changed()` when
     /// the selection changes this frame.
@@ -94,7 +107,7 @@ impl<'a> Select<'a> {
         let c = theme.colors;
         let radius = theme.corner();
 
-        let height = m.input_height;
+        let height = self.size.input_height(&m);
         let width = self
             .width
             .unwrap_or_else(|| ui.available_width().min(240.0));

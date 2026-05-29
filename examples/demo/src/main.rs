@@ -510,12 +510,12 @@ impl DemoApp {
             });
             ui.add_space(16.0);
             ui.allocate_ui(egui::vec2(300.0, 0.0), |ui| {
-                sc::Card::new().padding(16.0).show(ui, |ui| {
-                    ui.add(sc::Label::new("Plain card").strong().size(sc::Size::Large));
+                sc::Card::new().outline().padding(16.0).show(ui, |ui| {
+                    ui.add(sc::Label::new("Outline card").strong().size(sc::Size::Large));
                     ui.add_space(6.0);
                     ui.add(sc::Label::new(
-                        "Cards are bordered surfaces with optional title/description \
-                         headers — use them to group any content.",
+                        "The Outline variant uses a border instead of a fill (the \
+                         default Fill variant is the filled card on the left).",
                     ));
                     ui.add_space(10.0);
                     sc::Tooltip::new("This button does nothing in the demo")

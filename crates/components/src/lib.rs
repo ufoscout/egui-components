@@ -61,7 +61,7 @@ pub use avatar::{Avatar, AvatarShape, AvatarStatus};
 pub use badge::Badge;
 pub use breadcrumb::Breadcrumb;
 pub use button::Button;
-pub use card::Card;
+pub use card::{Card, CardVariant};
 pub use checkbox::Checkbox;
 pub use collapsible::Collapsible;
 pub use common::{Size, Variant};

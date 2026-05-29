@@ -1,9 +1,18 @@
-//! `Card` — a bordered, rounded surface that groups related content.
+//! `Card` — a rounded surface that groups related content.
 //!
 //! Doubles as gpui-component's section/`GroupBox` container: pass an optional
 //! [`title`](Card::title) / [`description`](Card::description) to render a
 //! header, then add the body in the `show` closure, just like
 //! [`List`](crate::list::List).
+//!
+//! Mirroring upstream `GroupBox`, the surface uses one of three mutually
+//! exclusive styles — it never combines a fill *and* a border (doing so makes
+//! the border invisible in themes where the muted surface and border share a
+//! color, e.g. the default dark theme):
+//!
+//! * [`CardVariant::Fill`] (default) — filled `muted_background`, no border.
+//! * [`CardVariant::Outline`] — a border, no fill.
+//! * [`CardVariant::Normal`] — neither; just padded content.
 //!
 //! ```ignore
 //! sc::Card::new()
@@ -14,12 +23,25 @@
 //!     });
 //! ```
 
-use egui::{Frame, InnerResponse, Margin, Ui};
+use egui::{Color32, Frame, InnerResponse, Margin, Stroke, Ui};
 use egui_components_theme::Theme;
 
 use crate::common::Size;
 use crate::label::Label;
 use crate::separator::Separator;
+
+/// How a [`Card`]'s surface is drawn. Matches upstream `GroupBoxVariant`:
+/// a card is either filled *or* outlined, never both.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
+pub enum CardVariant {
+    /// Filled `muted_background` surface with no border (default).
+    #[default]
+    Fill,
+    /// A border with a transparent fill.
+    Outline,
+    /// Neither fill nor border — just padded content.
+    Normal,
+}
 
 /// A surface container with an optional header (title + description).
 pub struct Card {
@@ -28,6 +50,7 @@ pub struct Card {
     padding: f32,
     /// Draw a separator between the header and the body.
     divider: bool,
+    variant: CardVariant,
 }
 
 impl Default for Card {
@@ -43,6 +66,7 @@ impl Card {
             description: None,
             padding: 16.0,
             divider: false,
+            variant: CardVariant::default(),
         }
     }
 
@@ -67,15 +91,38 @@ impl Card {
         self
     }
 
+    pub fn variant(mut self, v: CardVariant) -> Self {
+        self.variant = v;
+        self
+    }
+    /// Filled surface, no border (the default).
+    pub fn fill(self) -> Self {
+        self.variant(CardVariant::Fill)
+    }
+    /// Bordered, transparent fill.
+    pub fn outline(self) -> Self {
+        self.variant(CardVariant::Outline)
+    }
+    /// No fill and no border.
+    pub fn normal(self) -> Self {
+        self.variant(CardVariant::Normal)
+    }
+
     /// Render the card frame and run `body` inside it, returning the body's
     /// value alongside the frame [`egui::Response`].
     pub fn show<R>(self, ui: &mut Ui, body: impl FnOnce(&mut Ui) -> R) -> InnerResponse<R> {
         let theme = Theme::get(ui.ctx());
         let c = theme.colors;
 
+        let (fill, stroke) = match self.variant {
+            CardVariant::Fill => (c.muted_background, Stroke::NONE),
+            CardVariant::Outline => (Color32::TRANSPARENT, theme.border_stroke()),
+            CardVariant::Normal => (Color32::TRANSPARENT, Stroke::NONE),
+        };
+
         Frame::new()
-            .fill(c.muted_background)
-            .stroke(theme.border_stroke())
+            .fill(fill)
+            .stroke(stroke)
             .corner_radius(theme.corner_lg())
             .inner_margin(Margin::same(self.padding as i8))
             .show(ui, |ui| {

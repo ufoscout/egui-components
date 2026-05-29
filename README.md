@@ -11,7 +11,7 @@ This is **not** a 1:1 translation. GPUI is retained / reactive while egui is imm
 | Crate | What it provides |
 |-------|------------------|
 | `egui-components-theme` | Tailwind color palette, semantic tokens, light/dark `Theme` + helper to install it into `egui::Style` |
-| `egui-components` | Components: `Button`, `Checkbox`, `Switch`, `Slider`, `Input`, `NumberInput`, `OtpInput`, `Select`/Combobox, `Avatar`, `Card`, `Tooltip`, `Badge`, `Label`, `Separator`, `Alert`, `Tag`, `Icon`, `Progress`, `Accordion`, `Menu`, `Notification`/`Toasts`, `Dialog`, `AlertDialog`, `Resizable`, `Sidebar`, `TitleBar` |
+| `egui-components` | Components: `Button`, `Checkbox`, `Radio`, `Switch`, `Slider`, `Input`, `NumberInput`, `OtpInput`, `Select`/Combobox, `Avatar`, `Card`, `Tooltip`, `HoverCard`, `Popover`, `Badge`, `Label`, `Link`, `Separator`, `Alert`, `Tag`, `Icon`, `Progress`, `Rating`, `Accordion`, `Collapsible`, `Breadcrumb`, `Pagination`, `DescriptionList`, `Form`, `Menu`, `Notification`/`Toasts`, `Dialog`, `AlertDialog`, `Resizable`, `Sidebar`, `TitleBar` |
 | `examples/demo` | eframe app demonstrating all components with a light/dark toggle |
 
 ## Run the demo
@@ -48,6 +48,8 @@ Any color key the JSON doesn't define falls back to the matching field from `The
 
 The table below lists every component exposed by upstream [`gpui-component`](https://github.com/longbridge/gpui-component/tree/main/crates/ui/src) and whether it has been ported to `egui-components`.
 
+A few rows cover a type we expose under a different (often shadcn-style) name: `Card` for `GroupBox`, `Toasts` for `Notification`, and `Select::combobox` for `Combobox`. Those alternate names are noted in the relevant rows.
+
 | Component | Status |
 |-----------|--------|
 | Accordion | [Migrated](crates/components/src/accordion.rs) |
@@ -55,37 +57,38 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 | AlertDialog | [Migrated](crates/components/src/dialog.rs) |
 | Avatar | [Migrated](crates/components/src/avatar.rs) |
 | Badge | [Migrated](crates/components/src/badge.rs) |
-| Breadcrumb | Pending |
+| Breadcrumb | [Migrated](crates/components/src/breadcrumb.rs) |
 | Button | [Migrated](crates/components/src/button.rs) |
 | Calendar | Pending |
+| Card | [Migrated](crates/components/src/card.rs) (shadcn-style surface; upstream's nearest equivalent is `GroupBox`) |
 | Chart | Pending |
 | Checkbox | [Migrated](crates/components/src/checkbox.rs) |
-| Collapsible | Pending |
+| Collapsible | [Migrated](crates/components/src/collapsible.rs) |
 | ColorPicker | Pending |
 | Combobox | [Migrated](crates/components/src/select.rs) (as `Select::combobox`) |
 | DatePicker | Pending |
-| DescriptionList | Pending |
+| DescriptionList | [Migrated](crates/components/src/description_list.rs) |
 | Dialog | [Migrated](crates/components/src/dialog.rs) |
 | Dock | Pending |
-| Form | Pending |
+| Form | [Migrated](crates/components/src/form.rs) |
 | GroupBox | [Migrated](crates/components/src/card.rs) (as `Card`) |
-| HoverCard | Pending |
+| HoverCard | [Migrated](crates/components/src/hover_card.rs) |
 | Icon | [Migrated](crates/components/src/icon.rs) |
 | Input | [Migrated](crates/components/src/input.rs) |
 | Kbd | Pending |
 | Label | [Migrated](crates/components/src/label.rs) |
-| Link | Pending |
+| Link | [Migrated](crates/components/src/link.rs) |
 | List | [Migrated](crates/components/src/list.rs) |
 | Menu | [Migrated](crates/components/src/menu.rs) |
 | Notification | [Migrated](crates/components/src/notification.rs) |
 | NumberInput | [Migrated](crates/components/src/number_input.rs) |
 | OtpInput | [Migrated](crates/components/src/otp_input.rs) |
-| Pagination | Pending |
+| Pagination | [Migrated](crates/components/src/pagination.rs) |
 | Plot | Pending |
-| Popover | Pending |
+| Popover | [Migrated](crates/components/src/popover.rs) |
 | Progress | [Migrated](crates/components/src/progress.rs) |
-| Radio | Pending |
-| Rating | Pending |
+| Radio | [Migrated](crates/components/src/radio.rs) |
+| Rating | [Migrated](crates/components/src/rating.rs) |
 | Resizable | [Migrated](crates/components/src/resizable.rs) |
 | SearchableList | Pending |
 | Select | [Migrated](crates/components/src/select.rs) |
@@ -107,7 +110,7 @@ The table below lists every component exposed by upstream [`gpui-component`](htt
 
 ## Status
 
-This is an initial subset of the upstream library. The components shipped here have working visuals, variants/sizes, hover/active states, and interaction states. Many upstream components (`Dock`, `Table`, `CodeEditor`, `Chart`, `Calendar`, `Form`, …) are not yet ported because they require substantial framework-specific work (virtualization, focus traps, complex layout primitives) that has no direct egui equivalent and would each take significant additional effort.
+This is an initial subset of the upstream library. The components shipped here have working visuals, variants/sizes, hover/active states, and interaction states. Many upstream components (`Dock`, `Table`, `CodeEditor`, `Chart`, `Calendar`, …) are not yet ported because they require substantial framework-specific work (virtualization, focus traps, complex layout primitives) that has no direct egui equivalent and would each take significant additional effort.
 
 ## License
 

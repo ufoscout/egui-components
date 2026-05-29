@@ -62,6 +62,14 @@ struct DemoApp {
     last_alert: String,
     sidebar_page: Option<usize>,
     sidebar_collapsed: bool,
+    crumb: usize,
+    plan: usize,
+    rating: u32,
+    page: usize,
+    form_name: String,
+    form_email: String,
+    notify_pref: bool,
+    popover_wifi: bool,
 }
 
 impl Default for DemoApp {
@@ -99,6 +107,14 @@ impl Default for DemoApp {
             last_alert: String::from("(none)"),
             sidebar_page: Some(0),
             sidebar_collapsed: false,
+            crumb: 0,
+            plan: 1,
+            rating: 3,
+            page: 0,
+            form_name: String::new(),
+            form_email: String::new(),
+            notify_pref: true,
+            popover_wifi: true,
         }
     }
 }
@@ -187,47 +203,7 @@ impl eframe::App for DemoApp {
             )
             .show_inside(ui, |ui| {
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    self.section(ui, "Tabs", |this, ui| this.tabs(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Buttons", |this, ui| this.buttons(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Inputs & Toggles", |this, ui| this.inputs_toggles(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Select & Combobox", |this, ui| this.selects(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Number Input", |this, ui| this.number_inputs(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Avatars", |this, ui| this.avatars(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Cards", |this, ui| this.cards(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Labels & Badges", |this, ui| this.labels_badges(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Tags", |this, ui| this.tags(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Alerts", |this, ui| this.alerts(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "List", |this, ui| this.list(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Tree", |this, ui| this.tree(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Icons", |this, ui| this.icons(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Progress", |this, ui| this.progress(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "One-Time Code", |this, ui| this.otp(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Accordion", |this, ui| this.accordion(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Menu", |this, ui| this.menu(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Notifications", |this, ui| this.notifications(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Dialogs", |this, ui| this.dialogs(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Resizable", |this, ui| this.resizable(ui));
-                    ui.add_space(20.0);
-                    self.section(ui, "Sidebar & TitleBar", |this, ui| this.sidebar(ui));
+                    self.demo_sections(ui);
                 });
             });
 
@@ -238,6 +214,64 @@ impl eframe::App for DemoApp {
 }
 
 impl DemoApp {
+    fn demo_sections(&mut self, ui: &mut egui::Ui) {
+        self.section(ui, "Tabs", |this, ui| this.tabs(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Buttons", |this, ui| this.buttons(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Inputs & Toggles", |this, ui| this.inputs_toggles(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Select & Combobox", |this, ui| this.selects(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Number Input", |this, ui| this.number_inputs(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Avatars", |this, ui| this.avatars(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Cards", |this, ui| this.cards(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Labels & Badges", |this, ui| this.labels_badges(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Tags", |this, ui| this.tags(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Alerts", |this, ui| this.alerts(ui));
+        ui.add_space(20.0);
+        self.section(ui, "List", |this, ui| this.list(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Tree", |this, ui| this.tree(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Icons", |this, ui| this.icons(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Progress", |this, ui| this.progress(ui));
+        ui.add_space(20.0);
+        self.section(ui, "One-Time Code", |this, ui| this.otp(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Accordion", |this, ui| this.accordion(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Menu", |this, ui| this.menu(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Notifications", |this, ui| this.notifications(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Dialogs", |this, ui| this.dialogs(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Resizable", |this, ui| this.resizable(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Sidebar & TitleBar", |this, ui| this.sidebar(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Links & Breadcrumb", |this, ui| this.links(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Radio & Rating", |this, ui| this.radio_rating(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Collapsible", |this, ui| this.collapsible(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Description List", |this, ui| this.description_list(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Form", |this, ui| this.form(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Popover & Hover Card", |this, ui| this.popovers(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Pagination", |this, ui| this.pagination(ui));
+    }
+
     fn section(
         &mut self,
         ui: &mut egui::Ui,
@@ -738,6 +772,172 @@ impl DemoApp {
         });
     }
 
+    fn links(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal_wrapped(|ui| {
+            ui.add(sc::Link::new("egui").url("https://github.com/emilk/egui"));
+            ui.add_space(16.0);
+            ui.add(sc::Link::new("Always underlined").underline());
+            ui.add_space(16.0);
+            if ui.add(sc::Link::new("Action link (no url)")).clicked() {
+                self.click_counter += 1;
+            }
+        });
+        ui.add_space(12.0);
+        let crumbs = ["Home", "Projects", "egui-components", "README.md"];
+        if let Some(i) = sc::Breadcrumb::new()
+            .item(crumbs[0])
+            .item(crumbs[1])
+            .item(crumbs[2])
+            .current(crumbs[3])
+            .show(ui)
+        {
+            self.crumb = i;
+        }
+        ui.add_space(6.0);
+        ui.add(sc::Label::new(format!("Last crumb clicked: {}", crumbs[self.crumb])).muted());
+    }
+
+    fn radio_rating(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            ui.vertical(|ui| {
+                ui.add(sc::Label::new("Plan").muted());
+                for (i, name) in ["Free", "Pro", "Enterprise"].iter().enumerate() {
+                    ui.add(sc::Radio::selectable(&mut self.plan, i, *name));
+                }
+                ui.add(sc::Radio::new(false, "Unavailable").disabled(true));
+            });
+            ui.add_space(40.0);
+            ui.vertical(|ui| {
+                ui.add(sc::Label::new("Rate us").muted());
+                ui.add(sc::Rating::new(&mut self.rating).max(5));
+                ui.add_space(8.0);
+                ui.add(sc::Label::new(format!("{} / 5 stars", self.rating)).muted());
+                ui.add_space(8.0);
+                ui.add(sc::Label::new("Read-only:").muted());
+                let mut fixed = 4;
+                ui.add(sc::Rating::new(&mut fixed).max(5).read_only().star_size(16.0));
+            });
+        });
+    }
+
+    fn collapsible(&mut self, ui: &mut egui::Ui) {
+        ui.allocate_ui(egui::vec2(460.0, 0.0), |ui| {
+            sc::Collapsible::new("col-demo")
+                .default_open(true)
+                .show(
+                    ui,
+                    |ui| {
+                        ui.add(sc::Label::new("Advanced options").strong());
+                    },
+                    |ui| {
+                        ui.add(sc::Checkbox::new(&mut self.checked, "Enable telemetry"));
+                        ui.add(sc::Switch::new(&mut self.notify_pref));
+                    },
+                );
+            ui.add_space(8.0);
+            sc::Collapsible::new("col-demo2").show(
+                ui,
+                |ui| {
+                    ui.add(sc::Badge::new("3").variant(sc::Variant::Secondary));
+                    ui.add(sc::Label::new("Notifications"));
+                },
+                |ui| {
+                    ui.add(sc::Label::new("You have 3 unread notifications.").muted());
+                },
+            );
+        });
+    }
+
+    fn description_list(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal_top(|ui| {
+            ui.allocate_ui(egui::vec2(320.0, 0.0), |ui| {
+                sc::DescriptionList::new()
+                    .item("Name", "Ada Lovelace")
+                    .item("Born", "1815")
+                    .item("Known for", "First algorithm")
+                    .show(ui);
+            });
+            ui.add_space(24.0);
+            ui.allocate_ui(egui::vec2(340.0, 0.0), |ui| {
+                sc::DescriptionList::new()
+                    .label_width(110.0)
+                    .item("Plan", "Pro")
+                    .item("Seats", "12")
+                    .item("Renewal", "May 29, 2026")
+                    .bordered()
+                    .show(ui);
+            });
+        });
+    }
+
+    fn form(&mut self, ui: &mut egui::Ui) {
+        ui.allocate_ui(egui::vec2(360.0, 0.0), |ui| {
+            sc::Form::new().show(ui, |form| {
+                form.required("Full name", |ui| {
+                    ui.add(sc::Input::new(&mut self.form_name).width(340.0));
+                });
+                form.field_with_hint("Email", "We'll never share it.", |ui| {
+                    ui.add(
+                        sc::Input::new(&mut self.form_email)
+                            .placeholder("you@example.com")
+                            .width(340.0),
+                    );
+                });
+                form.field("Notifications", |ui| {
+                    ui.add(sc::Switch::new(&mut self.notify_pref));
+                });
+                form.raw(|ui| {
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        ui.add(sc::Button::primary("Submit"));
+                        ui.add_space(8.0);
+                        ui.add(sc::Button::secondary("Cancel"));
+                    });
+                });
+            });
+        });
+    }
+
+    fn popovers(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal(|ui| {
+            let trigger = ui.add(sc::Button::secondary("Wi-Fi  ▾"));
+            sc::Popover::new("wifi-pop").width(240.0).show(ui, &trigger, |ui| {
+                ui.add(sc::Label::new("Network").strong());
+                ui.add_space(6.0);
+                ui.add(sc::Switch::new(&mut self.popover_wifi));
+                ui.add(sc::Label::new(if self.popover_wifi {
+                    "Connected to \"home\""
+                } else {
+                    "Wi-Fi is off"
+                }).muted());
+            });
+
+            ui.add_space(20.0);
+
+            let hovered = ui.add(sc::Link::new("@ada (hover me)"));
+            sc::HoverCard::new().max_width(260.0).show(&hovered, |ui| {
+                ui.horizontal(|ui| {
+                    ui.add(sc::Avatar::from_name("Ada Lovelace"));
+                    ui.add_space(8.0);
+                    ui.vertical(|ui| {
+                        ui.add(sc::Label::new("Ada Lovelace").strong());
+                        ui.add(sc::Label::new("@ada").muted());
+                    });
+                });
+                ui.add_space(6.0);
+                ui.add(sc::Label::new(
+                    "Often regarded as the first computer programmer.",
+                ));
+            });
+        });
+    }
+
+    fn pagination(&mut self, ui: &mut egui::Ui) {
+        let total = 12;
+        ui.add(sc::Pagination::new(&mut self.page, total));
+        ui.add_space(6.0);
+        ui.add(sc::Label::new(format!("Page {} of {}", self.page + 1, total)).muted());
+    }
+
     fn labels_badges(&mut self, ui: &mut egui::Ui) {
         ui.horizontal_wrapped(|ui| {
             ui.add(sc::Label::new("Default"));
@@ -983,5 +1183,70 @@ impl DemoApp {
                 .title("Error")
                 .danger(),
         );
+    }
+}
+
+#[cfg(test)]
+mod smoke {
+    use super::*;
+    use eframe::egui::{self, pos2, vec2, Event, Modifiers, RawInput, Rect};
+
+    fn frame(ctx: &egui::Context, app: &mut DemoApp, events: Vec<Event>) {
+        let mut input = RawInput::default();
+        input.screen_rect = Some(Rect::from_min_size(pos2(0.0, 0.0), vec2(960.0, 720.0)));
+        input.events = events;
+        let _ = ctx.run_ui(input, |ui| {
+            egui::ScrollArea::vertical().show(ui, |ui| {
+                app.demo_sections(ui);
+            });
+        });
+    }
+
+    #[test]
+    fn scroll_does_not_panic() {
+        let ctx = egui::Context::default();
+        Theme::light().install(&ctx);
+        let mut app = DemoApp::default();
+        let m = Modifiers::default();
+        let scrollbar_x = 953.0;
+
+        // Frame 0: establish layout + scrollbar geometry.
+        frame(&ctx, &mut app, vec![]);
+
+        // Press the scrollbar handle near the top, then drag it down the full
+        // height over many frames — pointer stays at the right edge, hovering
+        // whatever widget scrolls under it at each position.
+        frame(
+            &ctx,
+            &mut app,
+            vec![
+                Event::PointerMoved(pos2(scrollbar_x, 60.0)),
+                Event::PointerButton {
+                    pos: pos2(scrollbar_x, 60.0),
+                    button: egui::PointerButton::Primary,
+                    pressed: true,
+                    modifiers: m,
+                },
+            ],
+        );
+        for k in 1..=60 {
+            let y = 60.0 + k as f32 * 11.0;
+            frame(&ctx, &mut app, vec![Event::PointerMoved(pos2(scrollbar_x, y))]);
+        }
+        // Release and also sweep the pointer back up through the middle.
+        frame(
+            &ctx,
+            &mut app,
+            vec![Event::PointerButton {
+                pos: pos2(scrollbar_x, 720.0),
+                button: egui::PointerButton::Primary,
+                pressed: false,
+                modifiers: m,
+            }],
+        );
+        for k in 0..40 {
+            let y = 700.0 - k as f32 * 16.0;
+            frame(&ctx, &mut app, vec![Event::PointerMoved(pos2(480.0, y))]);
+        }
     }
 }

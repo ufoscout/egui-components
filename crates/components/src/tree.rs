@@ -58,6 +58,17 @@ where
     NodeIdType: NodeId + Send + Sync + 'static,
     F: FnOnce(&mut TreeViewBuilder<'_, NodeIdType>),
 {
+    // `egui_ltreeview`'s `draw_indent_hint` calls `Rect::clamp` on the current
+    // clip rect, which panics if that rect is "negative" (`min > max`). When
+    // the tree lives inside a scroll area and is scrolled fully out of view,
+    // the clip rect collapses to a non-overlapping (negative) rect. Skip
+    // rendering in that case rather than letting the dependency panic — the
+    // tree simply isn't visible then anyway.
+    if ui.clip_rect().is_negative() {
+        let response = ui.allocate_response(egui::Vec2::ZERO, egui::Sense::hover());
+        return (response, Vec::new());
+    }
+
     let theme = Theme::get(ui.ctx());
     let result = ui.scope(|ui| {
         ui.visuals_mut().selection.bg_fill = theme.colors.secondary_background;

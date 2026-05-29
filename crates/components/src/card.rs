@@ -74,7 +74,7 @@ impl Card {
         let c = theme.colors;
 
         Frame::new()
-            .fill(c.background)
+            .fill(c.muted_background)
             .stroke(theme.border_stroke())
             .corner_radius(theme.corner_lg())
             .inner_margin(Margin::same(self.padding as i8))

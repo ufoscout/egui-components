@@ -62,6 +62,7 @@ struct DemoApp {
     last_alert: String,
     sidebar_page: Option<usize>,
     sidebar_collapsed: bool,
+    rail_page: Option<usize>,
     crumb: usize,
     plan: usize,
     rating: u32,
@@ -107,6 +108,7 @@ impl Default for DemoApp {
             last_alert: String::from("(none)"),
             sidebar_page: Some(0),
             sidebar_collapsed: false,
+            rail_page: Some(0),
             crumb: 0,
             plan: 1,
             rating: 3,
@@ -255,7 +257,11 @@ impl DemoApp {
         ui.add_space(20.0);
         self.section(ui, "Resizable", |this, ui| this.resizable(ui));
         ui.add_space(20.0);
-        self.section(ui, "Sidebar & TitleBar", |this, ui| this.sidebar(ui));
+        self.section(ui, "Headings", |this, ui| this.headings(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Scroll Area", |this, ui| this.scroll_area(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Sidebar, Rail & TitleBar", |this, ui| this.sidebar(ui));
         ui.add_space(20.0);
         self.section(ui, "Links & Breadcrumb", |this, ui| this.links(ui));
         ui.add_space(20.0);
@@ -725,7 +731,64 @@ impl DemoApp {
         });
     }
 
+    fn headings(&mut self, ui: &mut egui::Ui) {
+        ui.add(sc::Heading::new("Account settings").h1());
+        ui.add_space(10.0);
+        ui.add(sc::Heading::new("Profile"));
+        ui.add_space(10.0);
+        ui.add(
+            sc::Heading::new("Notifications")
+                .h3()
+                .description("Choose what you want to be notified about."),
+        );
+        ui.add_space(10.0);
+        ui.add(sc::Heading::new("Connected apps").h4());
+    }
+
+    fn scroll_area(&mut self, ui: &mut egui::Ui) {
+        ui.add(sc::Label::new("Themed scroll bars; the handle expands on hover.").muted());
+        ui.add_space(8.0);
+        sc::Card::new()
+            .show(ui, |ui| {
+                sc::ScrollArea::vertical()
+                    .id_salt("demo-scroll")
+                    .max_height(160.0)
+                    .show(ui, |ui| {
+                        ui.set_width(ui.available_width());
+                        for i in 1..=40 {
+                            ui.add(sc::Label::new(format!("Scrollable row {i}")));
+                            ui.add_space(2.0);
+                        }
+                    });
+            });
+    }
+
     fn sidebar(&mut self, ui: &mut egui::Ui) {
+        ui.allocate_ui(egui::vec2(ui.available_width().min(620.0), 260.0), |ui| {
+            ui.horizontal_top(|ui| {
+                let clicked = sc::Rail::new("demo-rail")
+                    .selected(self.rail_page)
+                    .show(ui, |r| {
+                        r.item(sc::IconKind::Home, "Home");
+                        r.item(sc::IconKind::Search, "Explore");
+                        r.item(sc::IconKind::File, "Files");
+                        r.footer();
+                        r.item(sc::IconKind::Settings, "Settings");
+                    });
+                if let Some(i) = clicked {
+                    self.rail_page = Some(i);
+                }
+                ui.add_space(12.0);
+                ui.vertical(|ui| {
+                    ui.add(sc::Label::new("Rail").strong());
+                    ui.add(sc::Label::new(
+                        "A permanent icon-only navigation rail. Labels live in \
+                         hover tooltips; the Settings item is pinned to the bottom.",
+                    ));
+                });
+            });
+        });
+        ui.add_space(16.0);
         ui.add(sc::Switch::new(&mut self.sidebar_collapsed));
         ui.add(sc::Label::new("Collapse sidebar").muted());
         ui.add_space(8.0);

@@ -11,7 +11,7 @@ This is **not** a 1:1 translation. GPUI is retained / reactive while egui is imm
 | Crate | What it provides |
 |-------|------------------|
 | `egui-components-theme` | Tailwind color palette, semantic tokens, light/dark `Theme` + helper to install it into `egui::Style` |
-| `egui-components` | Components: `Button`, `Checkbox`, `Radio`, `Switch`, `Slider`, `Input`, `NumberInput`, `OtpInput`, `Select`/Combobox, `Avatar`, `Card`, `Tooltip`, `HoverCard`, `Popover`, `Badge`, `Label`, `Link`, `Separator`, `Alert`, `Tag`, `Icon`, `Progress`, `Rating`, `Accordion`, `Collapsible`, `Breadcrumb`, `Pagination`, `DescriptionList`, `Form`, `Menu`, `Notification`/`Toasts`, `Dialog`, `AlertDialog`, `Resizable`, `Sidebar`, `TitleBar` |
+| `egui-components` | Components: `Button`, `Checkbox`, `Radio`, `Switch`, `Slider`, `Input`, `NumberInput`, `OtpInput`, `Select`/Combobox, `Avatar`, `Card`, `Tooltip`, `HoverCard`, `Popover`, `Badge`, `Label`, `Link`, `Separator`, `Alert`, `Tag`, `Icon`, `Progress`, `Rating`, `Accordion`, `Collapsible`, `Breadcrumb`, `Pagination`, `DescriptionList`, `Form`, `Menu`, `Notification`/`Toasts`, `Dialog`, `AlertDialog`, `Resizable`, `ScrollArea`, `Heading`, `Sidebar`, `Rail`, `TitleBar` |
 | `examples/demo` | eframe app demonstrating all components with a light/dark toggle |
 
 ## Run the demo
@@ -72,6 +72,7 @@ A few rows cover a type we expose under a different (often shadcn-style) name: `
 | Dock | Pending |
 | Form | [Migrated](crates/components/src/form.rs) |
 | GroupBox | [Migrated](crates/components/src/card.rs) (as `Card`) |
+| Heading | [Migrated](crates/components/src/heading.rs) (shadcn-style section title; upstream's nearest equivalent is `Text`) |
 | HoverCard | [Migrated](crates/components/src/hover_card.rs) |
 | Icon | [Migrated](crates/components/src/icon.rs) |
 | Input | [Migrated](crates/components/src/input.rs) |
@@ -88,8 +89,10 @@ A few rows cover a type we expose under a different (often shadcn-style) name: `
 | Popover | [Migrated](crates/components/src/popover.rs) |
 | Progress | [Migrated](crates/components/src/progress.rs) |
 | Radio | [Migrated](crates/components/src/radio.rs) |
+| Rail | [Migrated](crates/components/src/sidebar.rs) (icon-only navigation rail; upstream models it as a collapsed `Sidebar`) |
 | Rating | [Migrated](crates/components/src/rating.rs) |
 | Resizable | [Migrated](crates/components/src/resizable.rs) |
+| ScrollArea | [Migrated](crates/components/src/scroll_area.rs) (themed wrapper over `egui::ScrollArea`; upstream's `scroll` module) |
 | SearchableList | Pending |
 | Select | [Migrated](crates/components/src/select.rs) |
 | Separator | [Migrated](crates/components/src/separator.rs) |

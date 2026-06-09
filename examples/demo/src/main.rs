@@ -47,6 +47,7 @@ struct DemoApp {
     segmented_tab: usize,
     wrap_tab: usize,
     list_selected: Option<usize>,
+    table_selected: Option<usize>,
     tree_selected: Option<&'static str>,
     country: Option<usize>,
     fruit: Option<usize>,
@@ -93,6 +94,7 @@ impl Default for DemoApp {
             segmented_tab: 0,
             wrap_tab: 0,
             list_selected: Some(1),
+            table_selected: Some(0),
             tree_selected: None,
             country: None,
             fruit: Some(0),
@@ -238,6 +240,8 @@ impl DemoApp {
         self.section(ui, "Alerts", |this, ui| this.alerts(ui));
         ui.add_space(20.0);
         self.section(ui, "List", |this, ui| this.list(ui));
+        ui.add_space(20.0);
+        self.section(ui, "Table", |this, ui| this.table(ui));
         ui.add_space(20.0);
         self.section(ui, "Tree", |this, ui| this.tree(ui));
         ui.add_space(20.0);
@@ -1162,6 +1166,69 @@ impl DemoApp {
                 ui.add(sc::Label::new("Click a row to select. The 'Sent' row also has the `confirmed` check icon enabled to show off that slot."));
             });
         });
+    }
+
+    fn table(&mut self, ui: &mut egui::Ui) {
+        // (name, role, commits, active)
+        let people = [
+            ("Ada Lovelace", "Engineer", 128, true),
+            ("Alan Turing", "Researcher", 342, true),
+            ("Grace Hopper", "Architect", 271, false),
+            ("Katherine Johnson", "Analyst", 98, true),
+            ("Linus Torvalds", "Maintainer", 1502, true),
+            ("Margaret Hamilton", "Lead", 410, false),
+        ];
+
+        sc::Table::new("demo-people")
+            .resizable(true)
+            .selectable(true)
+            .max_height(220.0)
+            .column(sc::TableColumn::auto().header("Name").at_least(160.0))
+            .column(sc::TableColumn::remainder().header("Role"))
+            .column(
+                sc::TableColumn::initial(90.0)
+                    .header("Commits")
+                    .align(egui::Align::RIGHT),
+            )
+            .column(
+                sc::TableColumn::initial(80.0)
+                    .header("Status")
+                    .align(egui::Align::Center),
+            )
+            .show(ui, |mut body| {
+                for (i, (name, role, commits, active)) in people.iter().enumerate() {
+                    let row = body.row(|mut row| {
+                        row.selected(self.table_selected == Some(i));
+                        row.col(|ui| {
+                            ui.add(sc::Label::new(*name).strong());
+                        });
+                        row.col(|ui| {
+                            ui.add(sc::Label::new(*role).muted());
+                        });
+                        row.col(|ui| {
+                            ui.add(sc::Label::new(commits.to_string()));
+                        });
+                        row.col(|ui| {
+                            let (text, variant) = if *active {
+                                ("Active", sc::Variant::Success)
+                            } else {
+                                ("Away", sc::Variant::Secondary)
+                            };
+                            ui.add(sc::Badge::new(text).variant(variant));
+                        });
+                    });
+                    if row.clicked() {
+                        self.table_selected = Some(i);
+                    }
+                }
+            });
+
+        ui.add_space(8.0);
+        let selected = self
+            .table_selected
+            .and_then(|i| people.get(i).map(|(n, _, _, _)| *n))
+            .unwrap_or("(none)");
+        ui.add(sc::Label::new(format!("Selected: {selected}")).muted());
     }
 
     fn tree(&mut self, ui: &mut egui::Ui) {

@@ -110,7 +110,7 @@ A few rows cover a type we expose under a different (often shadcn-style) name: `
 | Stepper | Pending |
 | Switch | [Migrated](crates/components/src/switch.rs) |
 | Tab | [Migrated](crates/components/src/tabs.rs) |
-| Table | Pending |
+| Table | [Migrated](crates/components/src/table.rs) (themed wrapper over [egui_extras](https://crates.io/crates/egui_extras)' `TableBuilder`, rather than a hand-written virtualized port) |
 | Tag | [Migrated](crates/components/src/tag.rs) |
 | Text | Pending |
 | TitleBar | [Migrated](crates/components/src/titlebar.rs) |

@@ -8,4 +8,5 @@ description = "Component library for egui, ported from longbridge/gpui-component
 [dependencies]
 egui.workspace = true
 egui-components-theme.workspace = true
+egui_extras.workspace = true
 egui_ltreeview.workspace = true

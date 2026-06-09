@@ -16,6 +16,7 @@ description = "Port of longbridge/gpui-component to egui 0.34"
 [workspace.dependencies]
 egui = "0.34"
 eframe = { version = "0.34" }
+egui_extras = { version = "0.34", default-features = false }
 egui_ltreeview = "0.7"
 
 egui-components-theme = { path = "crates/theme", version = "0.1.0" }

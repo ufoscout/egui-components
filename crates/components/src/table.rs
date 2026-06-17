@@ -327,6 +327,42 @@ impl Table {
     }
 }
 
+/// The response returned by [`TableBodyUi::row`].
+///
+/// Wraps [`egui::Response`] and provides a `clicked()` method that uses raw
+/// pointer state rather than the widget-ID system. Text labels inside cells
+/// register with `Sense::click_and_drag()` (for text selection), which causes
+/// them to capture `potential_click_id` first and silently block the standard
+/// `Response::clicked()` on the row. The raw-input check avoids that race.
+pub struct TableRowResponse {
+    inner: Response,
+}
+
+impl TableRowResponse {
+    /// True when the primary mouse button was released over this row without a
+    /// significant drag.
+    ///
+    /// Uses raw pointer state rather than the widget-ID system because text
+    /// labels inside cells register `Sense::click_and_drag()` and capture
+    /// `potential_click_id` before the row does, which silently blocks the
+    /// standard `Response::clicked()`.
+    pub fn clicked(&self) -> bool {
+        let rect = self.inner.rect;
+        self.inner.ctx.input(|i| {
+            i.pointer.button_released(egui::PointerButton::Primary)
+                && !i.pointer.is_decidedly_dragging()
+                && i.pointer.hover_pos().map_or(false, |p| rect.contains(p))
+        })
+    }
+}
+
+impl std::ops::Deref for TableRowResponse {
+    type Target = Response;
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
 /// The themed body of a [`Table`], handed to the `show` closure. Add rows with
 /// [`row`](Self::row) or, for large data sets, [`rows`](Self::rows).
 pub struct TableBodyUi<'a> {
@@ -337,10 +373,10 @@ pub struct TableBodyUi<'a> {
 }
 
 impl<'a> TableBodyUi<'a> {
-    /// Add a single row, returning its [`Response`] (clickable when the table
-    /// is [`selectable`](Table::selectable)). The closure must add at least one
-    /// cell via [`TableRowUi::col`].
-    pub fn row(&mut self, add_row: impl FnOnce(TableRowUi<'_, '_, '_>)) -> Response {
+    /// Add a single row, returning a [`TableRowResponse`] (clickable when the
+    /// table is [`selectable`](Table::selectable)). The closure must add at
+    /// least one cell via [`TableRowUi::col`].
+    pub fn row(&mut self, add_row: impl FnOnce(TableRowUi<'_, '_, '_>)) -> TableRowResponse {
         let aligns = self.aligns;
         let pad = self.pad;
         let mut response = None;
@@ -352,7 +388,9 @@ impl<'a> TableBodyUi<'a> {
             });
             response = Some(inner.response());
         });
-        response.expect("a table row must add at least one column")
+        TableRowResponse {
+            inner: response.expect("a table row must add at least one column"),
+        }
     }
 
     /// Add `total_rows` rows, only building the ones currently visible. The
@@ -439,5 +477,147 @@ fn cell(ui: &mut Ui, align: Align, pad: f32, add_contents: impl FnOnce(&mut Ui))
                 add_contents,
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use egui::{pos2, vec2, Event, Modifiers, RawInput, Rect};
+    use egui_components_theme::Theme;
+
+    fn make_ctx() -> egui::Context {
+        let ctx = egui::Context::default();
+        Theme::light().install(&ctx);
+        ctx
+    }
+
+    fn raw_input(events: Vec<Event>) -> RawInput {
+        let mut i = RawInput::default();
+        i.screen_rect = Some(Rect::from_min_size(pos2(0.0, 0.0), vec2(800.0, 600.0)));
+        i.events = events;
+        i
+    }
+
+    /// Run one table frame and return (row rects, which row was clicked, full output).
+    fn run_frame(
+        ctx: &egui::Context,
+        events: Vec<Event>,
+        selected: Option<usize>,
+    ) -> (Vec<egui::Rect>, Option<usize>, egui::FullOutput) {
+        let mut rects = Vec::new();
+        let mut clicked = None;
+        let output = ctx.run_ui(raw_input(events), |ui| {
+            Table::new("test-table")
+                .column(TableColumn::remainder().header("Name"))
+                .selectable(true)
+                .show(ui, |mut body| {
+                    for (i, name) in ["Alice", "Bob", "Charlie"].iter().enumerate() {
+                        let row = body.row(|mut row| {
+                            row.selected(selected == Some(i));
+                            row.col(|ui| {
+                                ui.label(*name);
+                            });
+                        });
+                        rects.push(row.rect);
+                        if row.clicked() {
+                            clicked = Some(i);
+                        }
+                    }
+                });
+        });
+        (rects, clicked, output)
+    }
+
+    fn press(pos: egui::Pos2) -> Vec<Event> {
+        vec![
+            Event::PointerMoved(pos),
+            Event::PointerButton {
+                pos,
+                button: egui::PointerButton::Primary,
+                pressed: true,
+                modifiers: Modifiers::default(),
+            },
+        ]
+    }
+
+    fn release(pos: egui::Pos2) -> Vec<Event> {
+        vec![Event::PointerButton {
+            pos,
+            button: egui::PointerButton::Primary,
+            pressed: false,
+            modifiers: Modifiers::default(),
+        }]
+    }
+
+    /// `egui_extras::TableBuilder` needs one sizing pass before row rects are
+    /// valid (frame 0 returns `Rect::NOTHING` whose `.center()` is NaN).
+    /// Call this once before capturing coordinates.
+    fn warm_up(ctx: &egui::Context) {
+        run_frame(ctx, vec![], None);
+    }
+
+    /// A plain click — even when the pointer lands on label text — must select
+    /// the row. Primary regression guard for the fix that routes row clicks
+    /// through raw pointer state rather than the widget-ID system.
+    #[test]
+    fn click_on_row_text_selects_row() {
+        let ctx = make_ctx();
+        warm_up(&ctx);
+
+        // After warm-up the row rects are valid.
+        let (rects, _, _) = run_frame(&ctx, vec![], None);
+        assert!(!rects.is_empty(), "table must render rows");
+        let pos = rects[0].center();
+        assert!(pos.is_finite(), "row rect must be valid after warm-up");
+
+        run_frame(&ctx, press(pos), None);
+        let (_, clicked, _) = run_frame(&ctx, release(pos), None);
+
+        assert_eq!(clicked, Some(0), "click on row text must select that row");
+    }
+
+    /// A drag over the text (> the 6 px `max_click_dist` threshold) must NOT
+    /// fire row selection — the drag belongs to text selection, not the row.
+    #[test]
+    fn drag_on_row_text_does_not_select_row() {
+        let ctx = make_ctx();
+        warm_up(&ctx);
+
+        let (rects, _, _) = run_frame(&ctx, vec![], None);
+        let start = rects[0].center();
+        let end = start + vec2(30.0, 0.0); // 30 px >> 6 px threshold
+
+        run_frame(&ctx, press(start), None);
+        run_frame(&ctx, vec![Event::PointerMoved(end)], None);
+        let (_, clicked, _) = run_frame(&ctx, release(end), None);
+
+        assert_eq!(clicked, None, "drag over row text must not select the row");
+    }
+
+    /// After dragging over label text to create a selection, `Event::Copy` must
+    /// produce a non-empty `CopyText` command — confirming that label text
+    /// remains selectable and copyable despite the row-click fix.
+    #[test]
+    fn text_in_row_can_be_selected_and_copied() {
+        let ctx = make_ctx();
+        warm_up(&ctx);
+
+        let (rects, _, _) = run_frame(&ctx, vec![], None);
+        let left = pos2(rects[0].left() + 15.0, rects[0].center().y);
+        let right = pos2(rects[0].right() - 15.0, rects[0].center().y);
+
+        run_frame(&ctx, press(left), None);
+        run_frame(&ctx, vec![Event::PointerMoved(right)], None);
+        run_frame(&ctx, release(right), None);
+
+        // In egui 0.34, a copy request is an Event::Copy; the result lands in
+        // platform_output.commands as OutputCommand::CopyText.
+        let (_, _, output) = run_frame(&ctx, vec![Event::Copy], None);
+
+        let copied = output.platform_output.commands.iter().any(|cmd| {
+            matches!(cmd, egui::OutputCommand::CopyText(t) if !t.is_empty())
+        });
+        assert!(copied, "text selected in a row cell must be copyable");
     }
 }

@@ -443,9 +443,15 @@ impl TableRowUi<'_, '_, '_> {
         self
     }
 
-    /// The union [`Response`] of the cells added so far.
-    pub fn response(&self) -> Response {
-        self.inner.response()
+    /// The union [`TableRowResponse`] of the cells added so far.
+    ///
+    /// Returns [`TableRowResponse`] rather than [`egui::Response`] so that
+    /// `.clicked()` uses raw pointer state and avoids the `potential_click_id`
+    /// race caused by text labels inside cells.
+    pub fn response(&self) -> TableRowResponse {
+        TableRowResponse {
+            inner: self.inner.response(),
+        }
     }
 
     /// This row's index in the body.

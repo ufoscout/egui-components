@@ -354,6 +354,22 @@ impl TableRowResponse {
                 && i.pointer.hover_pos().map_or(false, |p| rect.contains(p))
         })
     }
+
+    /// True when the primary mouse button was double-clicked over this row.
+    ///
+    /// Like [`Self::clicked`], reads raw pointer state rather than the
+    /// widget-ID system: text labels inside cells register
+    /// `Sense::click_and_drag()` and capture `potential_click_id` before the
+    /// row, which silently blocks the standard `Response::double_clicked()`
+    /// when the double-click lands on a cell's text.
+    pub fn double_clicked(&self) -> bool {
+        let rect = self.inner.rect;
+        self.inner.ctx.input(|i| {
+            i.pointer
+                .button_double_clicked(egui::PointerButton::Primary)
+                && i.pointer.hover_pos().map_or(false, |p| rect.contains(p))
+        })
+    }
 }
 
 impl std::ops::Deref for TableRowResponse {

@@ -377,6 +377,33 @@ impl<'a> TableBodyUi<'a> {
             );
         });
     }
+
+    /// Add rows whose heights are given individually by `heights` (one per
+    /// row), instead of the table's uniform [`row_height`](Table::row_height).
+    ///
+    /// Use this when a row must grow to fit wrapped, multi-line cell
+    /// content: measure the content height yourself (e.g. with
+    /// [`egui::Ui::fonts`]) and yield it here. Like [`rows`](Self::rows) it
+    /// only builds the currently-visible rows and is a terminal call.
+    pub fn heterogeneous_rows(
+        self,
+        heights: impl Iterator<Item = f32>,
+        mut add_row: impl FnMut(usize, TableRowUi<'_, '_, '_>),
+    ) {
+        let aligns = self.aligns;
+        let pad = self.pad;
+        self.inner.heterogeneous_rows(heights, |mut inner| {
+            let index = inner.index();
+            add_row(
+                index,
+                TableRowUi {
+                    inner: &mut inner,
+                    aligns,
+                    pad,
+                },
+            );
+        });
+    }
 }
 
 /// A single themed [`Table`] row. Add cells with [`col`](Self::col) in column

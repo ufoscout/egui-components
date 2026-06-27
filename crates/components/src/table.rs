@@ -147,6 +147,7 @@ pub struct Table {
     header_height: Option<f32>,
     max_height: Option<f32>,
     cell_padding_x: f32,
+    scroll_to_row: Option<(usize, Option<Align>)>,
 }
 
 impl Table {
@@ -164,6 +165,7 @@ impl Table {
             header_height: None,
             max_height: None,
             cell_padding_x: 10.0,
+            scroll_to_row: None,
         }
     }
 
@@ -229,6 +231,15 @@ impl Table {
         self
     }
 
+    /// Scroll so body row `row` is visible, placed according to `align`
+    /// (e.g. `Some(Align::Center)`); `None` scrolls the minimum needed.
+    /// Apply it on the frame the selection changes — handy for keyboard
+    /// navigation, where the newly-selected row may be off-screen.
+    pub fn scroll_to_row(mut self, row: usize, align: Option<Align>) -> Self {
+        self.scroll_to_row = Some((row, align));
+        self
+    }
+
     /// Build the table and fill its body via `add_body`.
     pub fn show(self, ui: &mut Ui, add_body: impl FnOnce(TableBodyUi<'_>)) -> Response {
         let theme = Theme::get(ui.ctx());
@@ -270,6 +281,9 @@ impl Table {
                     .auto_shrink([false, true]);
                 if let Some(h) = self.max_height {
                     builder = builder.max_scroll_height(h);
+                }
+                if let Some((row, align)) = self.scroll_to_row {
+                    builder = builder.scroll_to_row(row, align);
                 }
                 for col in &self.columns {
                     builder = builder.column(col.column);

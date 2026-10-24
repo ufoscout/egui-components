@@ -6,7 +6,7 @@
 > marked "Migrated" below may still be incomplete. See [CLAUDE.md](CLAUDE.md)
 > for the migration workflow and the pinned upstream baseline commit.
 
-A port of [longbridge/gpui-component](https://github.com/longbridge/gpui-component) to [egui](https://github.com/emilk/egui) 0.34, exposing the same component set in idiomatic immediate-mode style.
+A port of [longbridge/gpui-component](https://github.com/longbridge/gpui-component) to [egui](https://github.com/emilk/egui) 0.36, exposing the same component set in idiomatic immediate-mode style.
 
 This is **not** a 1:1 translation. GPUI is retained / reactive while egui is immediate mode, so APIs are reshaped to match egui conventions (builder widgets returning `egui::Response`, `Widget` impls, etc.) while preserving the upstream visual language (Tailwind palette tokens, light + dark themes).
 

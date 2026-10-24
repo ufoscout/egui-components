@@ -1325,11 +1325,14 @@ mod smoke {
         let mut input = RawInput::default();
         input.screen_rect = Some(Rect::from_min_size(pos2(0.0, 0.0), vec2(960.0, 720.0)));
         input.events = events;
-        let _ = ctx.run_ui(input, |ui| {
+        // egui 0.36 panics if texture deltas are dropped unapplied; there is
+        // no renderer here, so discard them explicitly.
+        ctx.run_ui(input, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
                 app.demo_sections(ui);
             });
-        });
+        })
+        .drop_without_applying_deltas();
     }
 
     #[test]

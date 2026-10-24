@@ -10,7 +10,7 @@ Guidance for Claude (and other AI agents) working in this repository.
 ## What this project is
 
 `egui-components` is a **port of [longbridge/gpui-component](https://github.com/longbridge/gpui-component)
-to [egui](https://github.com/emilk/egui) 0.34**. The goal is to expose the same
+to [egui](https://github.com/emilk/egui) 0.36**. The goal is to expose the same
 component set as gpui-component, but in idiomatic egui immediate-mode style.
 
 It is **not** a 1:1 translation:

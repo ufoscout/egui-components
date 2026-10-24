@@ -11,13 +11,13 @@ version = "0.3.0"
 edition = "2021"
 license = "Apache-2.0"
 repository = "https://github.com/longbridge/gpui-component"
-description = "Port of longbridge/gpui-component to egui 0.34"
+description = "Port of longbridge/gpui-component to egui 0.36"
 
 [workspace.dependencies]
-egui = "0.35"
-eframe = { version = "0.35" }
-egui_extras = { version = "0.35", default-features = false }
-egui_ltreeview = "0.8"
+egui = "0.36"
+eframe = { version = "0.36" }
+egui_extras = { version = "0.36", default-features = false }
+egui_ltreeview = "0.9"
 
 egui-components-theme = { path = "crates/theme", version = "0.3.0" }
 egui-components = { path = "crates/components", version = "0.3.0" }

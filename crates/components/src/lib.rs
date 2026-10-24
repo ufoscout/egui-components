@@ -1,4 +1,4 @@
-//! gpui-component-style component library for [`egui`] 0.34, ported from
+//! gpui-component-style component library for [`egui`] 0.36, ported from
 //! [`gpui-component`](https://github.com/longbridge/gpui-component).
 //!
 //! All components are idiomatic egui widgets that return [`egui::Response`].

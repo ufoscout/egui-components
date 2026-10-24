@@ -12,25 +12,28 @@
 //!
 //! Selected rows in `egui_ltreeview` use `visuals.selection.bg_fill`, which
 //! our theme sets to the bright text-selection color. That's correct for text
-//! inputs but visually loud for a tree. [`Tree::show_themed`] applies a small
-//! local visual tweak so the selected row uses the same soft secondary
-//! background that [`crate::ListItem`] uses, keeping the look consistent.
+//! inputs but visually loud for a tree. [`show_themed`] (re-exported as
+//! `show_themed_tree`) applies a small local visual tweak so the selected row
+//! uses the same soft secondary background that [`crate::ListItem`] uses,
+//! keeping the look consistent.
 //!
-//! ```ignore
-//! use egui_components::{Tree, TreeViewBuilder};
+//! ```no_run
+//! # fn demo(ui: &mut egui::Ui) {
+//! use egui_components::{show_themed_tree, TreeAction};
 //!
 //! let id = ui.make_persistent_id("file-tree");
-//! let (response, actions) = Tree::show_themed(ui, id, |builder| {
+//! let (_response, actions) = show_themed_tree(ui, id, |builder| {
 //!     builder.dir("src", "src");
 //!     builder.leaf("src/lib.rs", "lib.rs");
 //!     builder.close_dir();
 //!     builder.leaf("Cargo.toml", "Cargo.toml");
 //! });
 //! for action in actions {
-//!     if let egui_components::TreeAction::SetSelected(ids) = action {
+//!     if let TreeAction::SetSelected(_ids) = action {
 //!         // update your own state from ids
 //!     }
 //! }
+//! # }
 //! ```
 
 use egui::{Id, Response, Ui};
